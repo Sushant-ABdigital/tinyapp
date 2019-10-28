@@ -7,12 +7,23 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
+//Setting the view engine as ejs
+app.set("view engine", "ejs");
+
 app.get("/", (req, res) => {
   res.send("hello");
 });
 
-app.get("/urls.json", (req, res) => {
-  res.json(urlDatabase);
+//Rendering the database into url_index file in views.
+app.get("/urls", (req, res) => {
+  let templateVars = { urls: urlDatabase };
+  //render mehthod takes in file name and
+  res.render("urls_index.ejs", templateVars);
+});
+
+app.get("/urls/:shortURL", (req, res) => {
+  let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
+  res.render('urls_show', templateVars);
 });
 
 app.get("/hello", (req, res) => {
