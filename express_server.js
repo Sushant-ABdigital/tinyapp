@@ -7,9 +7,11 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
-//Setting the view engine as ejs
+//****** Setting the view engine as ejs
 app.set("view engine", "ejs");
 
+
+//****** Routes
 app.get("/", (req, res) => {
   res.send("hello");
 });
@@ -24,19 +26,6 @@ app.get("/urls", (req, res) => {
 app.get("/urls/:shortURL", (req, res) => {
   let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
   res.render('urls_show', templateVars);
-});
-
-app.get("/hello", (req, res) => {
-  res.send("<html><body>Hellooo <b>World</b></body></html>\n");
-});
-
-app.get("/set", (req, res) => {
-  const a = 1;
-  res.send(`a = ${a}`);
-});
-
-app.get("/fetch", (req, res) => {
-  res.send(`a = ${a}`);
 });
 
 app.listen(PORT, () => {
