@@ -40,7 +40,6 @@ app.get("/urls", (req, res) => {
 app.post("/urls", (req, res) => {
   let randomString = generateRandomString();
   urlDatabase[randomString] = req.body.longURL;
-  console.log(urlDatabase);
   res.redirect(`/urls/${randomString}`);
 });
 
@@ -48,16 +47,26 @@ app.get("/urls/new", (req, res) => {
   res.render("urls_new");
 });
 
+
 app.get("/urls/:shortURL", (req, res) => {
   let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
   res.render("urls_show", templateVars);
 });
 
+//Sending user to external URL
 app.get("/u/:shortURL", (req, res) => {
   const longURL = urlDatabase[req.params.shortURL];
   res.redirect(`https://${longURL}`);
 });
 
+//*** Delete Functionality
+app.post("/urls/:shortURL/delete", (req, res) => {
+  const shortURL = req.params.shortURL;
+  delete urlDatabase[shortURL];
+  res.redirect('/urls');
+});
+
+//Server to listen on ...
 app.listen(PORT, () => {
   console.log(`Listening on ${PORT}`);
 });
