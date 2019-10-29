@@ -33,20 +33,22 @@ app.get("/", (req, res) => {
 //Rendering the database into url_index file in views.
 app.get("/urls", (req, res) => {
   let templateVars = { urls: urlDatabase };
-  //render mehthod takes in file name and
+  //render mehthod takes in file name and data that we want to send!
   res.render("urls_index.ejs", templateVars);
 });
 
-app.post("/urls", (req, res) => {
-  let randomString = generateRandomString();
-  urlDatabase[randomString] = req.body.longURL;
-  res.redirect(`/urls/${randomString}`);
-});
-
+//Rendering the new URLS
 app.get("/urls/new", (req, res) => {
   res.render("urls_new");
 });
 
+//Creation of new URL
+app.post("/urls", (req, res) => {
+  let randomString = generateRandomString();
+  urlDatabase[randomString] = req.body.longURL;
+  // res.redirect(`/urls/${randomString}`);
+  res.redirect(`/urls/`);
+});
 
 app.get("/urls/:shortURL", (req, res) => {
   let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
@@ -63,9 +65,16 @@ app.get("/u/:shortURL", (req, res) => {
 app.post("/urls/:shortURL/delete", (req, res) => {
   const shortURL = req.params.shortURL;
   delete urlDatabase[shortURL];
-  res.redirect('/urls');
+  res.redirect("/urls");
 });
 
+//*** Edit functionality
+app.post("/urls/:shortURL/edit", (req, res) => {
+  const shortURL = req.params.shortURL;
+  console.log(req.body.updatedURL);
+  urlDatabase[shortURL] = req.body.updatedURL;
+  res.redirect("/urls");
+});
 //Server to listen on ...
 app.listen(PORT, () => {
   console.log(`Listening on ${PORT}`);
