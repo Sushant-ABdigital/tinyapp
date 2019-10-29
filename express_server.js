@@ -2,6 +2,7 @@ const express = require("express");
 const app = express();
 const PORT = 8080;
 const bodyParser = require("body-parser");
+const cookieParser = require("cookie-parser");
 
 const urlDatabase = {
   b2xVn2: "www.lighthouselabs.ca",
@@ -22,6 +23,9 @@ const generateRandomString = () => {
 // being encoded from buffer to human readable code
 app.use(bodyParser.urlencoded({ extended: true }));
 
+//Using the cookie parser...
+app.use(cookieParser());
+
 //****** Setting the view engine as ejs
 app.set("view engine", "ejs");
 
@@ -32,7 +36,10 @@ app.get("/", (req, res) => {
 
 //Rendering the database into url_index file in views.
 app.get("/urls", (req, res) => {
-  let templateVars = { urls: urlDatabase };
+  let templateVars = {
+    username: req.cookies["username"],
+    urls: urlDatabase
+  };
   //render mehthod takes in file name and data that we want to send!
   res.render("urls_index.ejs", templateVars);
 });
@@ -75,6 +82,19 @@ app.post("/urls/:shortURL/edit", (req, res) => {
   urlDatabase[shortURL] = req.body.updatedURL;
   res.redirect("/urls");
 });
+
+//Handling the login route and setting the cookie.
+app.post("/login", (req, res) => {
+  res.cookie("username", req.body.username);
+  res.redirect("/urls");
+});
+
+//Handling the post route
+app.post("/logout", (req, res) => {
+  res.clearCookie('username');
+  res.redirect('/urls');
+});
+
 //Server to listen on ...
 app.listen(PORT, () => {
   console.log(`Listening on ${PORT}`);
