@@ -17,25 +17,22 @@
         <a class="nav-item nav-link" href="/urls">My URLs</a>
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
       </div>
-      <% if(username) {%>
+      <% if(user) {%>
       <div class="ml-auto my-auto d-flex">
-        <p class="my-auto text-white">Logged in as: <%= username %></p>
+        <p class="my-auto text-white">Logged in as: <%= user.email %></p>
         <form action="/logout" method="POST">
           <button type="button submit" class="btn btn-outline-dark my-auto ml-4">Logout</button>
         </form>
       </div>
       <% } else { %>
-      <form action="/login" method="POST" class="ml-auto">
-        <div class="form-row align-items-center">
-          <div class="col-auto">
-            <label class="sr-only" for="inlineFormInput">Username</label>
-            <input type="text" name="username" class="form-control" id="inlineFormInput" placeholder="Username" />
-          </div>
-          <div class="col-auto">
-            <button type="submit" class="btn btn-primary">Submit</button>
-          </div>
+      <div class="align-items-center ml-auto d-flex">
+        <div class="col-auto navbar-nav">
+          <a class="nav-item nav-link" style = "text-decoration: none" href="/login">Login</a>
         </div>
-      </form>
+        <div class="col-auto navbar-nav">
+          <a class="nav-item nav-link" style = "text-decoration: none" href="/register">Register</a>
+        </div>
+      </div>
       <% } %>
     </div>
   </nav>
