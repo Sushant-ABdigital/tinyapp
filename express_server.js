@@ -100,6 +100,19 @@ app.post("/logout", (req, res) => {
   res.redirect("/urls");
 });
 
+//Registration page
+//Handling get request
+app.get("/register", (req, res) => {
+  let templateVars = { username: req.cookies["username"] };
+  res.render("registration", templateVars);
+});
+
+//Handling post request for registration page
+app.post("/register", (req, res) => {
+  console.log(req.body);
+  res.send("Handling post request");
+});
+
 //Server to listen on ...
 app.listen(PORT, () => {
   console.log(`Listening on ${PORT}`);
