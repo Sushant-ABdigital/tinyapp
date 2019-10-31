@@ -5,6 +5,14 @@ const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 const cookieSession = require("cookie-session");
 const bcrypt = require("bcrypt");
+const {
+  generateRandomString,
+  emailFinder,
+  passwordChecker,
+  findUserId,
+  getUserById,
+  getUserDataByEmail
+} = require("./helpers");
 
 //Database - url
 const urlDatabase = {
@@ -26,56 +34,6 @@ const users = {
   }
 };
 
-//***** HELPER FUNCTIONS  *****//
-//1. Function to generate random string
-const generateRandomString = () => {
-  let result = "";
-  const source = "abcdefghijklmnopqrstuvwxyz1234567890";
-  for (let i = 0; i < 6; i++) {
-    result += source.charAt(Math.floor(Math.random() * source.length));
-  }
-  return result;
-};
-
-//2.Function to check if we have email in users object.
-const emailFinder = (source, email) => {
-  for (const userId in source) {
-    if (source[userId].email === email) {
-      return true;
-    }
-  }
-  return false;
-};
-
-//3 Function to check the password
-const passwordChecker = (source, password) => {
-  for (const userId in source) {
-    if (bcrypt.compareSync(password, source[userId].password)) {
-      return true;
-    }
-  }
-  return false;
-};
-
-//4 Function to get the user
-const findUserString = (source, email) => {
-  for (const userId in source) {
-    if (source[userId].email === email) {
-      return source[userId].id;
-    }
-  }
-};
-
-//5 Generate the data for user
-const userData = (source, user) => {
-  let result = {};
-  for (const data in source) {
-    if (source[data].userID === user) {
-      result[data] = source[data];
-    }
-  }
-  return result;
-};
 //** using the body parser so that the data sending from browser will be made human readable as they are
 // being encoded from buffer to human readable code
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -118,7 +76,7 @@ app.get("/urls", (req, res) => {
     //Filtered data with the help of helper function
     let templateVars = {
       user: users[req.session.user_id2],
-      urls: userData(urlDatabase, [req.session.user_id2].toString())
+      urls: getUserById(urlDatabase, [req.session.user_id2].toString())
     };
     // console.log(templateVars);
     res.render("urls_index.ejs", templateVars);
@@ -239,7 +197,7 @@ app.post("/login", (req, res) => {
       //password NOT matched
       res.status(403).send("password did not match");
     } else {
-      const userCookie = findUserString(users, req.body.email);
+      const userCookie = findUserId(users, req.body.email);
       req.session.user_id2 = userCookie;
       res.redirect("/urls");
     }
