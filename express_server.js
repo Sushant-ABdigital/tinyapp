@@ -3,6 +3,7 @@ const app = express();
 const PORT = 8080;
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
+const bcrypt = require("bcrypt");
 
 //Database - url
 const urlDatabase = {
@@ -48,7 +49,7 @@ const emailFinder = (source, email) => {
 //3 Function to check the password
 const passwordChecker = (source, password) => {
   for (const userId in source) {
-    if (source[userId].password === password) {
+    if (bcrypt.compareSync(password, source[userId].password)) {
       return true;
     }
   }
@@ -98,6 +99,7 @@ app.get("/", (req, res) => {
 
 //Rendering the database into url_index file in views.
 app.get("/urls", (req, res) => {
+  console.log(users);
   let templateVars = {
     user: users[req.cookies["user_id"]]
     // urls: urlDatabase
@@ -206,7 +208,7 @@ app.post("/register", (req, res) => {
     users[randomString] = {
       id: randomString,
       email: req.body.email,
-      password: req.body.password
+      password: bcrypt.hashSync(req.body.password, 5)
     };
     //Setting a cookie of random string
     res.cookie("user_id", randomString);
