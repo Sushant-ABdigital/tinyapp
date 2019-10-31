@@ -6,8 +6,8 @@ const cookieParser = require("cookie-parser");
 
 //Database - url
 const urlDatabase = {
-  b2xVn2: "www.lighthouselabs.ca",
-  "9sm5xK": "www.google.com"
+  b6UTxQ: { longURL: "https://www.tsn.ca", userID: "b6UTxQ" },
+  i3BoGr: { longURL: "https://www.google.ca", userID: "i3BoGr" }
 };
 
 //Database - Users
@@ -63,6 +63,19 @@ const findUserString = (source, email) => {
     }
   }
 };
+
+//5 Generate the data for user
+const userData = (source, user) => {
+  let result = {};
+  for (const data in source) {
+    if (source[data].userID === user) {
+      result[data] = source[data];
+    }
+  }
+  // console.log("DATABASE", urlDatabase);
+  // console.log("RESULT", result);
+  return result;
+};
 //** using the body parser so that the data sending from browser will be made human readable as they are
 // being encoded from buffer to human readable code
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -75,17 +88,32 @@ app.set("view engine", "ejs");
 
 //****** Routes
 app.get("/", (req, res) => {
-  res.send("hello");
+  let templateVars = {
+    user: users[req.cookies["user_id"]],
+    urls: urlDatabase
+  };
+
+  res.render("front", templateVars);
 });
 
 //Rendering the database into url_index file in views.
 app.get("/urls", (req, res) => {
   let templateVars = {
-    user: users[req.cookies["user_id"]],
-    urls: urlDatabase
+    user: users[req.cookies["user_id"]]
+    // urls: urlDatabase
   };
-  //render mehthod takes in file name and data that we want to send!
-  res.render("urls_index.ejs", templateVars);
+  //If there is no user logged in or registered.
+  if (!req.cookies["user_id"]) {
+    res.render("front", templateVars);
+  } else {
+    //Filtered data with the help of helper function
+    let templateVars = {
+      user: users[req.cookies["user_id"]],
+      urls: userData(urlDatabase, [req.cookies["user_id"]].toString())
+    };
+    // console.log(templateVars);
+    res.render("urls_index.ejs", templateVars);
+  }
 });
 
 //Rendering the new URLS
@@ -93,14 +121,22 @@ app.get("/urls/new", (req, res) => {
   let templateVars = {
     user: users[req.cookies["user_id"]]
   };
-  res.render("urls_new", templateVars);
+  //If user is not logged in just send the login page
+  if (!req.cookies["user_id"]) {
+    res.render("login", templateVars);
+  } else {
+    //Send the url new page since user is logged in.
+    res.render("urls_new", templateVars);
+  }
 });
 
 //Creation of new URL
 app.post("/urls", (req, res) => {
   let randomString = generateRandomString();
-  urlDatabase[randomString] = req.body.longURL;
-  // res.redirect(`/urls/${randomString}`);
+  urlDatabase[randomString] = {
+    longURL: req.body.longURL,
+    userID: req.cookies["user_id"]
+  };
   res.redirect(`/urls/`);
 });
 
@@ -108,30 +144,39 @@ app.get("/urls/:shortURL", (req, res) => {
   let templateVars = {
     user: users[req.cookies["user_id"]],
     shortURL: req.params.shortURL,
-    longURL: urlDatabase[req.params.shortURL]
+    longURL: urlDatabase[req.params.shortURL].longURL
   };
   res.render("urls_show", templateVars);
 });
 
 //Sending user to external URL
 app.get("/u/:shortURL", (req, res) => {
-  const longURL = urlDatabase[req.params.shortURL];
+  const longURL = urlDatabase[req.params.shortURL].longURL;
   res.redirect(`https://${longURL}`);
 });
 
 //*** Delete Functionality
 app.post("/urls/:shortURL/delete", (req, res) => {
-  const shortURL = req.params.shortURL;
-  delete urlDatabase[shortURL];
-  res.redirect("/urls");
+  //check if user is logged in
+  if (req.cookies["user_id"]) {
+    const shortURL = req.params.shortURL;
+    delete urlDatabase[shortURL];
+    res.redirect("/urls");
+  } else {
+    res.send("User should be logged in");
+  }
 });
 
 //*** Edit functionality
 app.post("/urls/:shortURL/edit", (req, res) => {
-  const shortURL = req.params.shortURL;
-  console.log(req.body.updatedURL);
-  urlDatabase[shortURL] = req.body.updatedURL;
-  res.redirect("/urls");
+  // console.log(req.body.updatedURL);
+  if (req.cookies["user_id"]) {
+    const shortURL = req.params.shortURL;
+    urlDatabase[shortURL].longURL = req.body.updatedURL;
+    res.redirect("/urls");
+  } else {
+    res.send("User should be loggedIn");
+  }
 });
 
 //Handling the logout post route
@@ -179,13 +224,12 @@ app.get("/login", (req, res) => {
 app.post("/login", (req, res) => {
   if (!emailFinder(users, req.body.email)) {
     //User with email NOT found;
-    res.status(403).send("User not found");
+    res.status(403).send("Email does not match");
   } else {
     if (!passwordChecker(users, req.body.password)) {
       //password NOT matched
       res.status(403).send("password did not match");
     } else {
-      console.log(req.body);
       const userCookie = findUserString(users, req.body.email);
       res.cookie("user_id", userCookie);
       res.redirect("/urls");
