@@ -1,6 +1,6 @@
 const { assert } = require("chai");
 
-const { getUserDataByEmail, emailFinder, findUserId, getUserById } = require("../helpers");
+const { getUserDataByEmail, emailFinder, findUserId, getUserById, ownershipCheck } = require("../helpers");
 
 //For testing driver data
 const testUsers = {
@@ -19,11 +19,11 @@ const testUsers = {
 const testDatabase = {
   hjkyui: { longURL: "https://www.tsn.ca", userID: "b6UTxQ" },
   fafaff: { longURL: "https://www.google.ca", userID: "b6UTxQ" },
-  wewewe: { longURL: "https://www.google.ca", userID: "b6UTxQ" },
-  fdfdfd: { longURL: "https://www.google.ca", userID: "i3BoGr" },
-  ertgfd: { longURL: "https://www.google.ca", userID: "i3BoGr" },
-  qwsazx: { longURL: "https://www.google.ca", userID: "i3BoGr" },
-  qwedsa: { longURL: "https://www.google.ca", userID: "i3BoGr" }
+  wewewe: { longURL: "https://www.facebook.ca", userID: "b6UTxQ" },
+  fdfdfd: { longURL: "https://www.ford.ca", userID: "i3BoGr" },
+  ertgfd: { longURL: "https://www.honda.ca", userID: "i3BoGr" },
+  qwsazx: { longURL: "https://www.audi.ca", userID: "i3BoGr" },
+  qwedsa: { longURL: "https://www.bmw.ca", userID: "i3BoGr" }
 };
 
 //1. Testing getUserDataByEmail function.
@@ -70,11 +70,23 @@ describe("getUserById", function() {
   it("should filter the user data of URLs based on the ID provided", function() {
     const output = getUserById(testDatabase, "i3BoGr");
     const expectedOutput = {
-      fdfdfd: { longURL: "https://www.google.ca", userID: "i3BoGr" },
-      ertgfd: { longURL: "https://www.google.ca", userID: "i3BoGr" },
-      qwsazx: { longURL: "https://www.google.ca", userID: "i3BoGr" },
-      qwedsa: { longURL: "https://www.google.ca", userID: "i3BoGr" }
+      fdfdfd: { longURL: "https://www.ford.ca", userID: "i3BoGr" },
+      ertgfd: { longURL: "https://www.honda.ca", userID: "i3BoGr" },
+      qwsazx: { longURL: "https://www.audi.ca", userID: "i3BoGr" },
+      qwedsa: { longURL: "https://www.bmw.ca", userID: "i3BoGr" }
     };
     assert.deepEqual(output, expectedOutput);
+  });
+});
+
+//5. Ownership check
+describe("ownershipCheck", function() {
+  it("should give truthy response if short URL belongs to the provided user", function() {
+    const output = ownershipCheck(testDatabase, "b6UTxQ", "wewewe");
+    assert.isTrue(output);
+  });
+  it("should give falsy response if short URL belongs to the provided user", function() {
+    const output = ownershipCheck(testDatabase, "b6UTxQ", "ertgfd");
+    assert.isFalse(output);
   });
 });

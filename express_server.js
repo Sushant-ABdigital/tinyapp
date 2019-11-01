@@ -57,21 +57,16 @@ app.set("view engine", "ejs");
 
 //****** Routes
 app.get("/", (req, res) => {
-  let templateVars = {
-    user: users[req.session.user_id2],
-    urls: urlDatabase
-  };
-
-  res.render("front", templateVars);
+  res.redirect("/urls");
 });
 
 //Rendering the database into url_index file in views.
 app.get("/urls", (req, res) => {
-  let templateVars = {
-    user: users[req.session.user_id2]
-  };
   //If there is no user logged in or registered.
   if (!req.session.user_id2) {
+    let templateVars = {
+      user: users[req.session.user_id2]
+    };
     res.render("front", templateVars);
   } else {
     //Filtered data with the help of helper function
@@ -214,12 +209,12 @@ app.get("/login", (req, res) => {
 app.post("/login", (req, res) => {
   const user = getUserDataByEmail(users, req.body.email);
   if (user === undefined) {
-    res.status(403).send("Email does not match");
+    res.status(403).send(`Email does not match go back to <a href="/">home</a>`);
   } else {
     //check for password
     if (!bcrypt.compareSync(req.body.password, user.password)) {
       // if password NOT matched
-      res.status(403).send("password did not match");
+      res.status(403).send(`Password does not match go back to <a href="/">home</a>`);
     } else {
       const userCookie = findUserId(users, req.body.email);
       req.session.user_id2 = userCookie;
@@ -229,7 +224,7 @@ app.post("/login", (req, res) => {
 });
 
 app.get("*", (req, res) => {
-  res.render("front");
+  res.redirect("/urls");
 });
 
 //Server to listen on ...
