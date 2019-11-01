@@ -208,8 +208,9 @@ app.get("/login", (req, res) => {
 
 app.post("/login", (req, res) => {
   const user = getUserDataByEmail(users, req.body.email);
+  console.log(users);
   if (user === undefined) {
-    res.status(403).send(`Email does not match go back to <a href="/">home</a>`);
+    res.status(403).send(`Email does not match go back to <a href="/register">Register</a>`);
   } else {
     //check for password
     if (!bcrypt.compareSync(req.body.password, user.password)) {

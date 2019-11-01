@@ -16,8 +16,6 @@ const getUserDataByEmail = (source, userEmail) => {
   for (const data in source) {
     if (source[data].email === userEmail) {
       result = source[data];
-    } else {
-      result = undefined;
     }
   }
   return result;
