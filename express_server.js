@@ -224,6 +224,7 @@ app.post("/login", (req, res) => {
   }
 });
 
+//Catch All route
 app.get("*", (req, res) => {
   res.redirect("/urls");
 });

@@ -63,4 +63,5 @@ const ownershipCheck = (urlDatabase, userId, link) => {
   return false;
 };
 
+//Exporting all functions
 module.exports = { generateRandomString, getUserDataByEmail, emailFinder, findUserId, getUserById, ownershipCheck };
