@@ -1,5 +1,4 @@
 //***** HELPER FUNCTIONS  *****//
-const bcrypt = require("bcrypt");
 
 //1. Function to generate random string
 const generateRandomString = () => {
@@ -11,20 +10,23 @@ const generateRandomString = () => {
   return result;
 };
 
-//2.Function to check if we have email in users object.
+//2 Generate the data for user by Email
+const getUserDataByEmail = (source, userEmail) => {
+  let result;
+  for (const data in source) {
+    if (source[data].email === userEmail) {
+      result = source[data];
+    } else {
+      result = undefined;
+    }
+  }
+  return result;
+};
+
+//3.Function to check if we have email in users object.
 const emailFinder = (source, email) => {
   for (const userId in source) {
     if (source[userId].email === email) {
-      return true;
-    }
-  }
-  return false;
-};
-
-//3 Function to check the password
-const passwordChecker = (source, password) => {
-  for (const userId in source) {
-    if (bcrypt.compareSync(password, source[userId].password)) {
       return true;
     }
   }
@@ -51,15 +53,16 @@ const getUserById = (source, user) => {
   return result;
 };
 
-//6 Generate the data for user by Email
-const getUserDataByEmail = (source, userEmail) => {
-  let result = {};
-  for (const data in source) {
-    if (source[data].email === userEmail) {
-      result[data] = source[data];
+//6. Function to check if user owns the URL
+const ownershipCheck = (urlDatabase, userId, link) => {
+  for (let data in urlDatabase) {
+    if (urlDatabase[data]["userID"] === userId) {
+      if (data === link) {
+        return true;
+      }
     }
   }
-  return result;
+  return false;
 };
 
-module.exports = { generateRandomString, emailFinder, passwordChecker, findUserId, getUserById, getUserDataByEmail };
+module.exports = { generateRandomString, getUserDataByEmail, emailFinder, findUserId, getUserById, ownershipCheck };

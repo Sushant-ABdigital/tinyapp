@@ -1,3 +1,5 @@
+/* eslint-disable no-prototype-builtins */
+/* eslint-disable camelcase */
 const express = require("express");
 const app = express();
 const PORT = 8080;
@@ -8,16 +10,16 @@ const bcrypt = require("bcrypt");
 const {
   generateRandomString,
   emailFinder,
-  passwordChecker,
   findUserId,
   getUserById,
-  getUserDataByEmail
+  getUserDataByEmail,
+  ownershipCheck
 } = require("./helpers");
 
 //Database - url
 const urlDatabase = {
   b6UTxQ: { longURL: "https://www.tsn.ca", userID: "b6UTxQ" },
-  i3BoGr: { longURL: "https://www.google.ca", userID: "i3BoGr" }
+  o3Bhgr: { longURL: "https://www.google.ca", userID: "i3BoGr" }
 };
 
 //Database - Users
@@ -78,7 +80,6 @@ app.get("/urls", (req, res) => {
       user: users[req.session.user_id2],
       urls: getUserById(urlDatabase, [req.session.user_id2].toString())
     };
-    // console.log(templateVars);
     res.render("urls_index.ejs", templateVars);
   }
 });
@@ -108,41 +109,63 @@ app.post("/urls", (req, res) => {
 });
 
 app.get("/urls/:shortURL", (req, res) => {
-  let templateVars = {
-    user: users[req.session.user_id2],
-    shortURL: req.params.shortURL,
-    longURL: urlDatabase[req.params.shortURL].longURL
-  };
-  res.render("urls_show", templateVars);
+  if (urlDatabase.hasOwnProperty(req.params.shortURL)) {
+    //checking if anyone is logged in
+    if (req.session.user_id2) {
+      //tempvar with owbership
+      let templateVars = {
+        user: users[req.session.user_id2],
+        shortURL: req.params.shortURL,
+        longURL: urlDatabase[req.params.shortURL].longURL,
+        ownershipCheck: ownershipCheck(urlDatabase, users[req.session.user_id2]["id"], req.params.shortURL.toString())
+      };
+      res.render("urls_show", templateVars);
+    } else {
+      //tempvars without ownership logic
+      let templateVars = {
+        user: users[req.session.user_id2],
+        shortURL: req.params.shortURL,
+        longURL: urlDatabase[req.params.shortURL].longURL,
+        ownershipCheck: false
+      };
+      res.render("urls_show", templateVars);
+    }
+  } else {
+    //Improvement: Can send 404 page.
+    res.render("notFound");
+  }
 });
 
 //Sending user to external URL
 app.get("/u/:shortURL", (req, res) => {
-  const longURL = urlDatabase[req.params.shortURL].longURL;
-  res.redirect(`https://${longURL}`);
+  if (urlDatabase.hasOwnProperty(req.params.shortURL)) {
+    const longURL = urlDatabase[req.params.shortURL].longURL;
+    res.redirect(`https://${longURL}`);
+  } else {
+    res.render("notFound");
+  }
 });
 
 //*** Delete Functionality
 app.post("/urls/:shortURL/delete", (req, res) => {
-  //check if user is logged in
-  if (req.session.user_id2) {
+  //check if user is logged in and owns the URL
+  if (req.session.user_id2 && ownershipCheck(urlDatabase, req.session.user_id2, req.params.shortURL)) {
     const shortURL = req.params.shortURL;
     delete urlDatabase[shortURL];
     res.redirect("/urls");
   } else {
-    res.send("User should be logged in");
+    res.render("shouldLogin");
   }
 });
 
 //*** Edit functionality
 app.post("/urls/:shortURL/edit", (req, res) => {
-  // console.log(req.body.updatedURL);
   if (req.session.user_id2) {
     const shortURL = req.params.shortURL;
     urlDatabase[shortURL].longURL = req.body.updatedURL;
     res.redirect("/urls");
   } else {
-    res.send("User should be loggedIn");
+    res.render("shouldLogin");
   }
 });
 
@@ -173,7 +196,7 @@ app.post("/register", (req, res) => {
     users[randomString] = {
       id: randomString,
       email: req.body.email,
-      password: bcrypt.hashSync(req.body.password, 5)
+      password: bcrypt.hashSync(req.body.password, 10)
     };
     //Setting session cookie
     req.session.user_id2 = randomString;
@@ -188,13 +211,15 @@ app.get("/login", (req, res) => {
 });
 
 //Handling the login route - POST and setting the cookie.
+
 app.post("/login", (req, res) => {
-  if (!emailFinder(users, req.body.email)) {
-    //User with email NOT found;
+  const user = getUserDataByEmail(users, req.body.email);
+  if (user === undefined) {
     res.status(403).send("Email does not match");
   } else {
-    if (!passwordChecker(users, req.body.password)) {
-      //password NOT matched
+    //check for password
+    if (!bcrypt.compareSync(req.body.password, user.password)) {
+      // password NOT matched
       res.status(403).send("password did not match");
     } else {
       const userCookie = findUserId(users, req.body.email);
@@ -202,6 +227,10 @@ app.post("/login", (req, res) => {
       res.redirect("/urls");
     }
   }
+});
+
+app.get("*", (req, res) => {
+  res.render("front");
 });
 
 //Server to listen on ...

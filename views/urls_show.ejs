@@ -20,7 +20,7 @@
       </div>
       <div class="card-footer text-muted"></div>
     </div>
-    <% if(user) {%>
+    <% if(user && ownershipCheck) {%>
     <div class="card text-center">
       <div class="card-header">
         <div class="card-body">
@@ -46,6 +46,8 @@
         </div>
       </div>
     </div>
+    <% } else {%>
+    <p class="text-center">You dont own this URL!!</p>
     <% } %>
     <!-- Bootstrap JS -->
     <script
