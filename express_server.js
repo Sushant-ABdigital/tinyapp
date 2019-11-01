@@ -69,7 +69,6 @@ app.get("/", (req, res) => {
 app.get("/urls", (req, res) => {
   let templateVars = {
     user: users[req.session.user_id2]
-    // urls: urlDatabase
   };
   //If there is no user logged in or registered.
   if (!req.session.user_id2) {
@@ -91,7 +90,7 @@ app.get("/urls/new", (req, res) => {
   };
   //If user is not logged in just send the login page
   if (!req.session.user_id2) {
-    res.render("login", templateVars);
+    res.render("loginForm", templateVars);
   } else {
     //Send the url new page since user is logged in.
     res.render("urls_new", templateVars);
@@ -207,7 +206,7 @@ app.post("/register", (req, res) => {
 //Serving the login page - GET
 app.get("/login", (req, res) => {
   const templateVars = { user: users[req.session.user_id2] };
-  res.render("login", templateVars);
+  res.render("loginForm", templateVars);
 });
 
 //Handling the login route - POST and setting the cookie.
@@ -219,7 +218,7 @@ app.post("/login", (req, res) => {
   } else {
     //check for password
     if (!bcrypt.compareSync(req.body.password, user.password)) {
-      // password NOT matched
+      // if password NOT matched
       res.status(403).send("password did not match");
     } else {
       const userCookie = findUserId(users, req.body.email);
