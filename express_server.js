@@ -184,7 +184,7 @@ app.post("/register", (req, res) => {
   if (!req.body.email || !req.body.password) {
     res.status(400).send("Username and password should not be empty");
   } else if (emailFinder(users, req.body.email)) {
-    res.status(400).send("Already registered user");
+    res.status(400).send(`Already registered user. Go back to <a href="/login">Login</a>`);
   } else {
     let randomString = generateRandomString();
     users[randomString] = {
