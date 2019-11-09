@@ -36,11 +36,7 @@ const users = {
   }
 };
 
-//** using the body parser so that the data sending from browser will be made human readable as they are
-// being encoded from buffer to human readable code
 app.use(bodyParser.urlencoded({ extended: true }));
-
-//Using the cookie parser...
 app.use(cookieParser());
 
 //Using cookie-session
@@ -103,10 +99,11 @@ app.post("/urls", (req, res) => {
 });
 
 app.get("/urls/:shortURL", (req, res) => {
+  //Checking if URL Exists
   if (urlDatabase.hasOwnProperty(req.params.shortURL)) {
-    //checking if anyone is logged in
+    //If URL exist and checking if anyone is logged in
     if (req.session.user_id2) {
-      //tempvar with owbership
+      //tempvar with ownership
       let templateVars = {
         user: users[req.session.user_id2],
         shortURL: req.params.shortURL,
@@ -115,17 +112,13 @@ app.get("/urls/:shortURL", (req, res) => {
       };
       res.render("urls_show", templateVars);
     } else {
-      //tempvars without ownership logic
+      //If not logged than request to either login or register page
       let templateVars = {
-        user: users[req.session.user_id2],
-        shortURL: req.params.shortURL,
-        longURL: urlDatabase[req.params.shortURL].longURL,
-        ownershipCheck: false
+        user: users[req.session.user_id2]
       };
-      res.render("urls_show", templateVars);
+      res.render("shouldLogin", templateVars);
     }
   } else {
-    //Improvement: Can send 404 page.
     res.render("notFound");
   }
 });
@@ -134,7 +127,11 @@ app.get("/urls/:shortURL", (req, res) => {
 app.get("/u/:shortURL", (req, res) => {
   if (urlDatabase.hasOwnProperty(req.params.shortURL)) {
     const longURL = urlDatabase[req.params.shortURL].longURL;
-    res.redirect(`https://${longURL}`);
+    if (longURL.startsWith("https://")) {
+      res.redirect(`${longURL}`);
+    } else {
+      res.redirect(`https://${longURL}`);
+    }
   } else {
     res.render("notFound");
   }
