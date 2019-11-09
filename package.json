@@ -2,9 +2,9 @@
   "name": "tinyapp",
   "version": "1.0.0",
   "description": "URL Shortner",
-  "main": "index.js",
+  "main": "express_server.js",
   "scripts": {
-    "start:dev": "nodemon -L express-server.js",
+    "start": "node express_server.js",
     "test": "./node_modules/mocha/bin/mocha"
   },
   "repository": {
