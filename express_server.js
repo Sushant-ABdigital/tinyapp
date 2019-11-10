@@ -130,7 +130,7 @@ app.get("/u/:shortURL", (req, res) => {
     if (longURL.startsWith("http")) {
       res.redirect(`${longURL}`);
     } else {
-      res.redirect(`https://${longURL}`);
+      res.redirect(`http://${longURL}`);
     }
   } else {
     res.render("notFound");
