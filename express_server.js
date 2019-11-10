@@ -127,7 +127,7 @@ app.get("/urls/:shortURL", (req, res) => {
 app.get("/u/:shortURL", (req, res) => {
   if (urlDatabase.hasOwnProperty(req.params.shortURL)) {
     const longURL = urlDatabase[req.params.shortURL].longURL;
-    if (longURL.startsWith("https://")) {
+    if (longURL.startsWith("http")) {
       res.redirect(`${longURL}`);
     } else {
       res.redirect(`https://${longURL}`);
